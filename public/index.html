@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Statsjs - GUI</title>
+</head>
+<body>
+
+    <progress id="progress" max="40" value="0"></progress>
+
+    <script>
+        var ws = new WebSocket("ws://localhost:3000");
+
+        var progressElem = document.querySelector("#progress");
+
+        var getProgressData = (function() {
+            var actual = 0;
+            return function(ws) {
+                var request = {
+                    com : "getLimit",
+                    limit : 1,
+                    start : actual
+                };
+                ws.send(JSON.stringify(request));
+                ws.onmessage = function(e) {
+                    console.log(JSON.parse(e.data));
+                    progressElem.value = actual+1;
+                    if (actual === 39) { return progressElem.style.opacity = "0.5";}
+                    actual++;
+                    getProgressData(ws);
+                }
+            }
+        })();
+
+        ws.onopen = function() {
+            getProgressData(ws);
+        };
+    </script>
+</body>
+</html>
